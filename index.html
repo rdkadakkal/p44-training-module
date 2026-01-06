@@ -183,35 +183,31 @@
         }
 
         /* ----------------------------------------------------- */
-        /* CERTIFICATE DESIGN (HTML/CSS)                         */
+        /* CERTIFICATE DESIGN (Screen View)                      */
         /* ----------------------------------------------------- */
         
-        /* The container for the certificate view (initially hidden) */
         #certificate-view {
             display: none; 
             background: white;
             text-align: center;
-            /* On screen, we show it nicely centered */
             max-width: 900px;
             margin: 2rem auto;
             border: 1px solid #ddd;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
 
-        /* The actual visual certificate card */
         .cert-card {
             position: relative;
             padding: 40px;
             border: 15px solid var(--p44-navy);
             background: #fff;
-            min-height: 600px; /* Approximate Landscape aspect */
+            min-height: 600px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
         }
 
-        /* Decorative inner border */
         .cert-inner-border {
             border: 2px solid #ddd;
             width: 100%;
@@ -268,7 +264,6 @@
             color: var(--p44-navy);
         }
 
-        /* Controls below the certificate on screen */
         .cert-controls {
             padding: 20px;
             background: #f0f0f0;
@@ -281,48 +276,63 @@
         /* PRINT SPECIFIC STYLES (@media print)                  */
         /* ----------------------------------------------------- */
         @media print {
-            /* 1. Hide everything by default */
-            body * {
-                visibility: hidden;
+            
+            /* 1. Global Reset to eliminate browser margins */
+            @page {
+                size: landscape;
+                margin: 0;
             }
 
-            /* 2. Hide specific containers to be safe */
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+            }
+
+            /* 2. Hide specific containers */
             header, .container, .cert-controls {
                 display: none !important;
             }
 
-            /* 3. Make Certificate View Visible */
+            /* 3. Hide everything by default */
+            body * {
+                visibility: hidden;
+            }
+
+            /* 4. Make Certificate View Visible and Fixed */
             #certificate-view, #certificate-view * {
                 visibility: visible;
-                display: block;
             }
 
-            /* 4. Position Certificate to fill the page */
             #certificate-view {
-                position: absolute;
-                left: 0;
+                display: block !important;
+                position: fixed; /* Fix: Breaks out of flow to hit page edges */
                 top: 0;
+                left: 0;
                 width: 100%;
                 height: 100%;
-                margin: 0;
-                padding: 0;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box;
                 border: none;
                 box-shadow: none;
+                background: white;
+                z-index: 9999;
+                max-width: none !important; /* Override screen max-width */
             }
 
+            /* 5. Adjust Card for Full Page */
             .cert-card {
-                border-width: 5px !important; /* Thinner border for print if needed */
-                min-height: 100vh;
-                page-break-after: always;
+                width: 100%;
+                height: 100%;
+                border-width: 10px !important; /* Slightly thinner border for print aesthetics */
+                box-sizing: border-box;
+                margin: 0;
+                min-height: 100vh; /* Ensure it fills height */
             }
 
-            /* 5. Force Landscape & Colors */
-            @page {
-                size: landscape;
-                margin: 0; /* Remove default browser margins */
-            }
-
-            /* Ensure background colors print (Navy border) */
+            /* Ensure background colors print */
             * {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
@@ -382,7 +392,6 @@
                     <label for="learner-name" style="display: block; text-align: left; font-weight: bold; color: #1F2A44; margin-bottom: 5px;">Full Name:</label>
                     <input type="text" id="learner-name" placeholder="Ex: Jane Doe" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 15px; font-size: 16px;">
                     
-                    <!-- UPDATED BUTTON: PRINT INSTEAD OF DOWNLOAD -->
                     <button class="btn" onclick="openCertificateView()">Print / Save as PDF</button>
                 </div>
             </div>
@@ -394,7 +403,7 @@
         </div>
     </div>
 
-    <!-- HTML CERTIFICATE VIEW (Hidden on load, Shown for Print) -->
+    <!-- HTML CERTIFICATE VIEW -->
     <div id="certificate-view">
         <div class="cert-card">
             <div class="cert-inner-border"></div>
@@ -504,7 +513,7 @@
             }
         }
 
-        // --- CERTIFICATE LOGIC (NO JSPDF) ---
+        // --- CERTIFICATE LOGIC ---
 
         function openCertificateView() {
             const nameInput = document.getElementById('learner-name');
@@ -521,9 +530,9 @@
             const finalPercent = Math.round((score / quizData.length) * 100);
             document.getElementById('cert-score-display').innerText = "Score: " + finalPercent + "%";
 
-            // Hide Main App
+            // Hide Main App (on screen)
             document.getElementById('app-container').style.display = 'none';
-            document.querySelector('header').style.display = 'none'; // Hide main header
+            document.querySelector('header').style.display = 'none';
 
             // Show Certificate View
             document.getElementById('certificate-view').style.display = 'block';
