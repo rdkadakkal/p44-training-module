@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project44 Product Training Module</title>
-    <!-- jsPDF Library for Certificate Generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
         :root {
@@ -34,7 +32,7 @@
             min-height: 100vh;
         }
 
-        /* --- Header --- */
+        /* --- UI: Header --- */
         header {
             background-color: var(--p44-navy);
             color: var(--white);
@@ -49,7 +47,7 @@
             font-size: 1.5rem;
         }
 
-        /* --- Main Container --- */
+        /* --- UI: Main Container --- */
         .container {
             max-width: 800px;
             width: 95%;
@@ -61,12 +59,7 @@
             flex: 1;
         }
 
-        /* --- Video Section (Iframe Embed) --- */
-        .video-section {
-            display: block; /* Visible by default */
-        }
-
-        /* 16:9 Aspect Ratio Container for Iframe */
+        /* --- UI: Video Section --- */
         .iframe-container {
             position: relative;
             width: 100%;
@@ -95,7 +88,7 @@
             font-size: 0.95rem;
         }
 
-        /* --- Buttons --- */
+        /* --- UI: Buttons --- */
         .btn {
             background-color: var(--p44-blue);
             color: var(--white);
@@ -114,9 +107,14 @@
             background-color: #009ac2;
         }
 
-        /* --- Quiz Section --- */
-        .quiz-section {
-            display: none; /* Hidden by default */
+        .btn.secondary {
+            background-color: var(--p44-navy);
+            margin-top: 10px;
+        }
+
+        /* --- UI: Quiz Section --- */
+        .quiz-section, .result-section {
+            display: none;
         }
 
         .progress-bar-container {
@@ -165,39 +163,172 @@
             background-color: #f0fbff;
         }
 
-        /* --- Result Section --- */
-        .result-section {
-            display: none;
-            text-align: center;
-            padding: 1rem;
-        }
-
+        /* --- UI: Results --- */
         .score-display {
             font-size: 3rem;
             font-weight: bold;
             color: var(--p44-navy);
             margin-bottom: 1rem;
+            text-align: center;
         }
 
         .result-message {
             font-size: 1.2rem;
             margin-bottom: 2rem;
+            text-align: center;
         }
 
         .hidden {
             display: none !important;
         }
 
-        /* Mobile Adjustments */
-        @media (max-width: 600px) {
-            .container {
-                padding: 1rem;
-                margin: 1rem auto;
+        /* ----------------------------------------------------- */
+        /* CERTIFICATE DESIGN (HTML/CSS)                         */
+        /* ----------------------------------------------------- */
+        
+        /* The container for the certificate view (initially hidden) */
+        #certificate-view {
+            display: none; 
+            background: white;
+            text-align: center;
+            /* On screen, we show it nicely centered */
+            max-width: 900px;
+            margin: 2rem auto;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        /* The actual visual certificate card */
+        .cert-card {
+            position: relative;
+            padding: 40px;
+            border: 15px solid var(--p44-navy);
+            background: #fff;
+            min-height: 600px; /* Approximate Landscape aspect */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Decorative inner border */
+        .cert-inner-border {
+            border: 2px solid #ddd;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0; 
+            left: 0;
+            pointer-events: none;
+            margin: 10px;
+            width: calc(100% - 20px);
+            height: calc(100% - 20px);
+        }
+
+        .cert-header {
+            font-size: 48px;
+            font-weight: bold;
+            color: var(--p44-navy);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .cert-subtext {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 40px;
+        }
+
+        .cert-name {
+            font-size: 52px;
+            font-weight: bold;
+            color: var(--p44-blue);
+            margin-bottom: 10px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+            display: inline-block;
+            min-width: 50%;
+        }
+
+        .cert-course {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--p44-navy);
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
+
+        .cert-footer {
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+            margin-top: 40px;
+            font-size: 16px;
+            color: var(--p44-navy);
+        }
+
+        /* Controls below the certificate on screen */
+        .cert-controls {
+            padding: 20px;
+            background: #f0f0f0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        /* ----------------------------------------------------- */
+        /* PRINT SPECIFIC STYLES (@media print)                  */
+        /* ----------------------------------------------------- */
+        @media print {
+            /* 1. Hide everything by default */
+            body * {
+                visibility: hidden;
             }
-            header h1 {
-                font-size: 1.2rem;
+
+            /* 2. Hide specific containers to be safe */
+            header, .container, .cert-controls {
+                display: none !important;
+            }
+
+            /* 3. Make Certificate View Visible */
+            #certificate-view, #certificate-view * {
+                visibility: visible;
+                display: block;
+            }
+
+            /* 4. Position Certificate to fill the page */
+            #certificate-view {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                border: none;
+                box-shadow: none;
+            }
+
+            .cert-card {
+                border-width: 5px !important; /* Thinner border for print if needed */
+                min-height: 100vh;
+                page-break-after: always;
+            }
+
+            /* 5. Force Landscape & Colors */
+            @page {
+                size: landscape;
+                margin: 0; /* Remove default browser margins */
+            }
+
+            /* Ensure background colors print (Navy border) */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
+
     </style>
 </head>
 <body>
@@ -206,20 +337,19 @@
         <h1>Logistics & Visibility Fundamentals</h1>
     </header>
 
-    <div class="container">
+    <!-- MAIN APP CONTAINER -->
+    <div class="container" id="app-container">
         
-        <!-- SECTION 1: VIDEO PLAYER -->
-        <div id="video-section" class="video-section">
+        <!-- SECTION 1: VIDEO -->
+        <div id="video-section">
             <h2 style="color: var(--p44-navy); margin-bottom: 1rem;">Step 1: Training Video</h2>
             
             <div class="iframe-container">
-                <!-- Iframe src injected by JS -->
                 <iframe id="google-drive-embed" allow="autoplay; fullscreen" allowfullscreen></iframe>
             </div>
 
             <p class="instruction-text">
-                Please watch the video above. <br>
-                <strong>Note:</strong> Since this is a Google Drive embed, we cannot automatically detect when it finishes.
+                Please watch the video above.<br>
             </p>
 
             <button class="btn" onclick="finishVideo()">I have finished watching the video</button>
@@ -237,43 +367,63 @@
             </div>
         </div>
 
-        <!-- SECTION 3: RESULTS & CERTIFICATE -->
+        <!-- SECTION 3: RESULTS & INPUT -->
         <div id="result-section" class="result-section">
             <div id="score-text" class="score-display">0%</div>
-            <h2 id="result-header" style="color: var(--p44-navy);">Completed</h2>
+            <h2 id="result-header" style="color: var(--p44-navy); text-align: center;">Completed</h2>
             <p id="result-detail" class="result-message"></p>
 
-            <!-- SUCCESS / CERTIFICATE AREA (UPDATED) -->
+            <!-- Success Area -->
             <div id="success-area" class="hidden" style="margin-top: 2rem; padding: 20px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
                 <h3 style="color: #1F2A44; margin-bottom: 1rem;">Course Passed!</h3>
-                <p style="margin-bottom: 1.5rem;">Please enter your name below to generate your official certificate.</p>
+                <p style="margin-bottom: 1.5rem;">Enter your name to generate your certificate.</p>
                 
                 <div style="max-width: 400px; margin: 0 auto;">
                     <label for="learner-name" style="display: block; text-align: left; font-weight: bold; color: #1F2A44; margin-bottom: 5px;">Full Name:</label>
                     <input type="text" id="learner-name" placeholder="Ex: Jane Doe" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 15px; font-size: 16px;">
                     
-                    <button onclick="generateCertificate()" style="background-color: #00C0F3; color: white; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; transition: background 0.3s;">
-                        Download Certificate
-                    </button>
+                    <!-- UPDATED BUTTON: PRINT INSTEAD OF DOWNLOAD -->
+                    <button class="btn" onclick="openCertificateView()">Print / Save as PDF</button>
                 </div>
             </div>
 
             <!-- Retry Area -->
             <div id="retry-area" class="hidden">
-                <button class="btn" style="background-color: var(--p44-navy);" onclick="location.reload()">Retry Module</button>
+                <button class="btn secondary" onclick="location.reload()">Retry Module</button>
             </div>
         </div>
+    </div>
 
+    <!-- HTML CERTIFICATE VIEW (Hidden on load, Shown for Print) -->
+    <div id="certificate-view">
+        <div class="cert-card">
+            <div class="cert-inner-border"></div>
+            
+            <div class="cert-header">Certificate of Completion</div>
+            <div class="cert-subtext">This certifies that</div>
+            
+            <div class="cert-name" id="cert-name-display">LEARNER NAME</div>
+            
+            <div class="cert-subtext" style="margin-top: 20px;">has successfully passed the verified assessment for</div>
+            <div class="cert-course">Project44 Product Training</div>
+
+            <div class="cert-footer">
+                <div id="cert-date-display">Date: </div>
+                <div id="cert-score-display">Score: </div>
+            </div>
+            
+            <div style="margin-top: 40px; font-size: 12px; color: #999;">Verified Corporate Training Module</div>
+        </div>
+
+        <div class="cert-controls no-print">
+            <button class="btn secondary" onclick="closeCertificateView()">Back / Edit Name</button>
+            <button class="btn" onclick="window.print()">Print Now</button>
+        </div>
     </div>
 
     <script>
-        /**
-         * ------------------------------------------------------------------
-         * CONFIGURATION
-         * ------------------------------------------------------------------
-         */
+        // CONFIGURATION
         const videoID = "1kZ1uNSwoQ7_ha4n27RIOwVUSGB5iOblA";
-
         const quizData = [ 
             { "Question": "According to the sources, what is the legal role of a Freight Forwarder (FFW) in its purest definition?", "Options": [ "Carrier", "Agent", "Vessel Operator", "Consignee" ], "CorrectAnswer": 1 }, 
             { "Question": "Which primary document does an NVOCC issue to the actual shipper to act as a binding contract of carriage?", "Options": [ "Forwarder's Certificate of Receipt (FCR)", "Master Bill of Lading (MBL)", "House Bill of Lading (HBL)", "Shipper's Letter of Instruction (SLI)" ], "CorrectAnswer": 2 }, 
@@ -287,43 +437,31 @@
             { "Question": "Which status code in the B4 segment of an EDI 315 message signifies that a container has been loaded on a vessel?", "Options": [ "OA", "VA", "AE", "UV" ], "CorrectAnswer": 2 } 
         ];
 
-        /**
-         * ------------------------------------------------------------------
-         * APP LOGIC
-         * ------------------------------------------------------------------
-         */
-        
         let currentQuestionIndex = 0;
         let score = 0;
-        const passingScore = 80; // Percent
+        const passingScore = 80;
 
-        // Initialize: Set Iframe Source
+        // --- INIT ---
         window.addEventListener('DOMContentLoaded', () => {
             const iframe = document.getElementById('google-drive-embed');
             iframe.src = `https://drive.google.com/file/d/${videoID}/preview`;
         });
 
-        // Transition from Video to Quiz
+        // --- QUIZ LOGIC ---
         function finishVideo() {
             document.getElementById('video-section').style.display = 'none';
             document.getElementById('quiz-section').style.display = 'block';
             loadQuestion();
         }
 
-        // Load current question
         function loadQuestion() {
             const qData = quizData[currentQuestionIndex];
-            
-            // Update Progress Bar
             const progressPercent = (currentQuestionIndex / quizData.length) * 100;
             document.getElementById('progress-fill').style.width = `${progressPercent}%`;
-
-            // Set Text
             document.getElementById('question-text').innerText = `${currentQuestionIndex + 1}. ${qData.Question}`;
 
-            // Create Buttons
             const optionsContainer = document.getElementById('options-container');
-            optionsContainer.innerHTML = ''; // Clear previous
+            optionsContainer.innerHTML = '';
 
             qData.Options.forEach((opt, index) => {
                 const btn = document.createElement('button');
@@ -334,16 +472,11 @@
             });
         }
 
-        // Handle Answer Selection
         function handleAnswer(selectedIndex) {
-            const correctIndex = quizData[currentQuestionIndex].CorrectAnswer;
-            
-            if(selectedIndex === correctIndex) {
+            if(selectedIndex === quizData[currentQuestionIndex].CorrectAnswer) {
                 score++;
             }
-
             currentQuestionIndex++;
-
             if(currentQuestionIndex < quizData.length) {
                 loadQuestion();
             } else {
@@ -351,13 +484,11 @@
             }
         }
 
-        // Show Final Results
         function showResults() {
             document.getElementById('quiz-section').style.display = 'none';
             document.getElementById('result-section').style.display = 'block';
 
             const finalPercent = Math.round((score / quizData.length) * 100);
-            
             document.getElementById('score-text').innerText = `${finalPercent}%`;
             
             if(finalPercent >= passingScore) {
@@ -373,109 +504,45 @@
             }
         }
 
-        /**
-         * ------------------------------------------------------------------
-         * CERTIFICATE GENERATION (UPDATED & FIXED)
-         * ------------------------------------------------------------------
-         */
-        async function generateCertificate() {
-            // 1. Get User Name
-            const nameInput = document.getElementById('learner-name');
-            const learnerName = nameInput.value.trim();
+        // --- CERTIFICATE LOGIC (NO JSPDF) ---
 
-            // 2. Validation
-            if (!learnerName) {
-                alert("Please enter your full name to generate the certificate.");
+        function openCertificateView() {
+            const nameInput = document.getElementById('learner-name');
+            const name = nameInput.value.trim();
+
+            if(!name) {
+                alert("Please enter your full name first.");
                 return;
             }
 
-            // 3. Initialize jsPDF (Destructure ensures correct loading)
-            const { jsPDF } = window.jspdf;
-            
-            // Create new PDF: Landscape, Millimeters, A4 size
-            const doc = new jsPDF({
-                orientation: 'landscape',
-                unit: 'mm',
-                format: 'a4'
-            });
+            // Populate Certificate Data
+            document.getElementById('cert-name-display').innerText = name;
+            document.getElementById('cert-date-display').innerText = "Date: " + new Date().toLocaleDateString();
+            const finalPercent = Math.round((score / quizData.length) * 100);
+            document.getElementById('cert-score-display').innerText = "Score: " + finalPercent + "%";
 
-            // --- CONFIGURATION ---
-            const pageWidth = doc.internal.pageSize.getWidth(); // 297mm
-            const pageHeight = doc.internal.pageSize.getHeight(); // 210mm
-            const centerX = pageWidth / 2;
-            
-            // Colors
-            const navyBlue = "#1F2A44";
-            const p44Blue = "#00C0F3";
-            const lightGray = "#7a7a7a";
+            // Hide Main App
+            document.getElementById('app-container').style.display = 'none';
+            document.querySelector('header').style.display = 'none'; // Hide main header
 
-            // --- DESIGNING THE CERTIFICATE ---
+            // Show Certificate View
+            document.getElementById('certificate-view').style.display = 'block';
 
-            // 1. Thick Navy Border
-            doc.setDrawColor(navyBlue);
-            doc.setLineWidth(3);
-            doc.rect(5, 5, pageWidth - 10, pageHeight - 10);
-
-            // 2. Inner Thin Border (Decorative)
-            doc.setLineWidth(0.5);
-            doc.rect(8, 8, pageWidth - 16, pageHeight - 16);
-
-            // 3. Header: "Certificate of Completion"
-            doc.setTextColor(navyBlue);
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(32);
-            doc.text("CERTIFICATE OF COMPLETION", centerX, 50, { align: "center" });
-
-            // 4. Sub-Header: "This certifies that"
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(16);
-            doc.setTextColor(lightGray);
-            doc.text("This certifies that", centerX, 75, { align: "center" });
-
-            // 5. User Name (Dynamic)
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(40);
-            doc.setTextColor(p44Blue); // Project44 Cyan/Blue
-            doc.text(learnerName, centerX, 100, { align: "center" });
-
-            // Line under name
-            doc.setDrawColor(lightGray);
-            doc.setLineWidth(0.5);
-            doc.line(centerX - 60, 105, centerX + 60, 105);
-
-            // 6. Course Title
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(16);
-            doc.setTextColor(lightGray);
-            doc.text("has successfully passed the verified assessment for", centerX, 125, { align: "center" });
-
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(22);
-            doc.setTextColor(navyBlue);
-            doc.text("Project44 Product Training", centerX, 140, { align: "center" });
-
-            // 7. Footer Info (Date & Score)
-            const today = new Date().toLocaleDateString();
-            const finalScore = Math.round((score / quizData.length) * 100); 
-
-            doc.setFontSize(12);
-            doc.setFont("helvetica", "normal");
-            doc.setTextColor(navyBlue);
-
-            // Date (Bottom Left)
-            doc.text(`Date Issued: ${today}`, 20, 185);
-
-            // Score (Bottom Right)
-            doc.text(`Final Score: ${finalScore}%`, pageWidth - 20, 185, { align: "right" });
-
-            // Footer Tagline (Center Bottom)
-            doc.setFontSize(10);
-            doc.setTextColor(lightGray);
-            doc.text("Verified Training Module", centerX, 195, { align: "center" });
-
-            // --- SAVE FILE ---
-            doc.save("Project44_Training_Certificate.pdf");
+            // Auto Trigger Print
+            setTimeout(() => {
+                window.print();
+            }, 500);
         }
+
+        function closeCertificateView() {
+            // Show Main App
+            document.getElementById('app-container').style.display = 'block';
+            document.querySelector('header').style.display = 'block';
+
+            // Hide Certificate View
+            document.getElementById('certificate-view').style.display = 'none';
+        }
+
     </script>
 </body>
 </html>
