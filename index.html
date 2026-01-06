@@ -184,36 +184,6 @@
             margin-bottom: 2rem;
         }
 
-        /* --- Certificate Form --- */
-        .certificate-form {
-            max-width: 400px;
-            margin: 0 auto;
-            text-align: left;
-            background: #f9f9f9;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid #eee;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--p44-navy);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-
         .hidden {
             display: none !important;
         }
@@ -243,16 +213,13 @@
             <h2 style="color: var(--p44-navy); margin-bottom: 1rem;">Step 1: Training Video</h2>
             
             <div class="iframe-container">
-                <!-- 
-                    The src is set dynamically by JavaScript below 
-                    using the videoID variable.
-                -->
+                <!-- Iframe src injected by JS -->
                 <iframe id="google-drive-embed" allow="autoplay; fullscreen" allowfullscreen></iframe>
             </div>
 
             <p class="instruction-text">
-                Please proceed after watching the video above. <br>
-                
+                Please watch the video above. <br>
+                <strong>Note:</strong> Since this is a Google Drive embed, we cannot automatically detect when it finishes.
             </p>
 
             <button class="btn" onclick="finishVideo()">I have finished watching the video</button>
@@ -276,14 +243,18 @@
             <h2 id="result-header" style="color: var(--p44-navy);">Completed</h2>
             <p id="result-detail" class="result-message"></p>
 
-            <!-- Success Area: Certificate Input -->
-            <div id="success-area" class="hidden">
-                <div class="certificate-form">
-                    <div class="form-group">
-                        <label for="learner-name">Enter Full Name for Certificate:</label>
-                        <input type="text" id="learner-name" class="form-control" placeholder="e.g. Jane Doe">
-                    </div>
-                    <button class="btn" onclick="generateCertificate()">Download Certificate</button>
+            <!-- SUCCESS / CERTIFICATE AREA (UPDATED) -->
+            <div id="success-area" class="hidden" style="margin-top: 2rem; padding: 20px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                <h3 style="color: #1F2A44; margin-bottom: 1rem;">Course Passed!</h3>
+                <p style="margin-bottom: 1.5rem;">Please enter your name below to generate your official certificate.</p>
+                
+                <div style="max-width: 400px; margin: 0 auto;">
+                    <label for="learner-name" style="display: block; text-align: left; font-weight: bold; color: #1F2A44; margin-bottom: 5px;">Full Name:</label>
+                    <input type="text" id="learner-name" placeholder="Ex: Jane Doe" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 15px; font-size: 16px;">
+                    
+                    <button onclick="generateCertificate()" style="background-color: #00C0F3; color: white; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; transition: background 0.3s;">
+                        Download Certificate
+                    </button>
                 </div>
             </div>
 
@@ -301,10 +272,8 @@
          * CONFIGURATION
          * ------------------------------------------------------------------
          */
-        // 1. Paste your Google Drive Video File ID here:
         const videoID = "1kZ1uNSwoQ7_ha4n27RIOwVUSGB5iOblA";
 
-        // 2. Quiz Data
         const quizData = [ 
             { "Question": "According to the sources, what is the legal role of a Freight Forwarder (FFW) in its purest definition?", "Options": [ "Carrier", "Agent", "Vessel Operator", "Consignee" ], "CorrectAnswer": 1 }, 
             { "Question": "Which primary document does an NVOCC issue to the actual shipper to act as a binding contract of carriage?", "Options": [ "Forwarder's Certificate of Receipt (FCR)", "Master Bill of Lading (MBL)", "House Bill of Lading (HBL)", "Shipper's Letter of Instruction (SLI)" ], "CorrectAnswer": 2 }, 
@@ -404,77 +373,108 @@
             }
         }
 
-        // Generate PDF Certificate (Client-Side)
+        /**
+         * ------------------------------------------------------------------
+         * CERTIFICATE GENERATION (UPDATED & FIXED)
+         * ------------------------------------------------------------------
+         */
         async function generateCertificate() {
+            // 1. Get User Name
             const nameInput = document.getElementById('learner-name');
-            const name = nameInput.value.trim();
+            const learnerName = nameInput.value.trim();
 
-            if(!name) {
-                alert("Please enter your name.");
+            // 2. Validation
+            if (!learnerName) {
+                alert("Please enter your full name to generate the certificate.");
                 return;
             }
 
+            // 3. Initialize jsPDF (Destructure ensures correct loading)
             const { jsPDF } = window.jspdf;
+            
+            // Create new PDF: Landscape, Millimeters, A4 size
             const doc = new jsPDF({
                 orientation: 'landscape',
                 unit: 'mm',
                 format: 'a4'
             });
 
-            // --- Certificate Design ---
+            // --- CONFIGURATION ---
+            const pageWidth = doc.internal.pageSize.getWidth(); // 297mm
+            const pageHeight = doc.internal.pageSize.getHeight(); // 210mm
+            const centerX = pageWidth / 2;
             
-            // 1. Border
-            doc.setLineWidth(2);
-            doc.setDrawColor(31, 42, 68); // Navy
-            doc.rect(10, 10, 277, 190);
+            // Colors
+            const navyBlue = "#1F2A44";
+            const p44Blue = "#00C0F3";
+            const lightGray = "#7a7a7a";
 
-            // 2. Header Block
-            doc.setFillColor(31, 42, 68); // Navy
-            doc.rect(10, 10, 277, 40, 'F');
-            
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(26);
-            doc.setFont("helvetica", "bold");
-            doc.text("CERTIFICATE OF COMPLETION", 148.5, 30, { align: "center" });
+            // --- DESIGNING THE CERTIFICATE ---
 
-            // 3. Body Text
-            doc.setTextColor(31, 42, 68);
-            doc.setFontSize(16);
-            doc.setFont("helvetica", "normal");
-            doc.text("This certifies that", 148.5, 75, { align: "center" });
+            // 1. Thick Navy Border
+            doc.setDrawColor(navyBlue);
+            doc.setLineWidth(3);
+            doc.rect(5, 5, pageWidth - 10, pageHeight - 10);
 
-            // 4. Name
-            doc.setFontSize(32);
-            doc.setTextColor(0, 192, 243); // P44 Blue
-            doc.setFont("helvetica", "bold");
-            doc.text(name, 148.5, 95, { align: "center" });
-            
-            // Underline
-            doc.setDrawColor(200, 200, 200);
+            // 2. Inner Thin Border (Decorative)
             doc.setLineWidth(0.5);
-            doc.line(70, 100, 227, 100);
+            doc.rect(8, 8, pageWidth - 16, pageHeight - 16);
 
-            // 5. Course Title
-            doc.setTextColor(31, 42, 68);
-            doc.setFontSize(16);
-            doc.setFont("helvetica", "normal");
-            doc.text("has successfully completed the training module:", 148.5, 120, { align: "center" });
-
-            doc.setFontSize(22);
+            // 3. Header: "Certificate of Completion"
+            doc.setTextColor(navyBlue);
             doc.setFont("helvetica", "bold");
-            doc.text("Project44 Product Training", 148.5, 135, { align: "center" });
+            doc.setFontSize(32);
+            doc.text("CERTIFICATE OF COMPLETION", centerX, 50, { align: "center" });
 
-            // 6. Footer (Date and Score)
+            // 4. Sub-Header: "This certifies that"
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(16);
+            doc.setTextColor(lightGray);
+            doc.text("This certifies that", centerX, 75, { align: "center" });
+
+            // 5. User Name (Dynamic)
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(40);
+            doc.setTextColor(p44Blue); // Project44 Cyan/Blue
+            doc.text(learnerName, centerX, 100, { align: "center" });
+
+            // Line under name
+            doc.setDrawColor(lightGray);
+            doc.setLineWidth(0.5);
+            doc.line(centerX - 60, 105, centerX + 60, 105);
+
+            // 6. Course Title
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(16);
+            doc.setTextColor(lightGray);
+            doc.text("has successfully passed the verified assessment for", centerX, 125, { align: "center" });
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(22);
+            doc.setTextColor(navyBlue);
+            doc.text("Project44 Product Training", centerX, 140, { align: "center" });
+
+            // 7. Footer Info (Date & Score)
             const today = new Date().toLocaleDateString();
-            const finalPercent = Math.round((score / quizData.length) * 100);
+            const finalScore = Math.round((score / quizData.length) * 100); 
 
             doc.setFontSize(12);
             doc.setFont("helvetica", "normal");
-            doc.text(`Date: ${today}`, 20, 185);
-            doc.text(`Score: ${finalPercent}%`, 277, 185, { align: "right" });
+            doc.setTextColor(navyBlue);
 
-            // Trigger Download
-            doc.save("Project44_Certificate.pdf");
+            // Date (Bottom Left)
+            doc.text(`Date Issued: ${today}`, 20, 185);
+
+            // Score (Bottom Right)
+            doc.text(`Final Score: ${finalScore}%`, pageWidth - 20, 185, { align: "right" });
+
+            // Footer Tagline (Center Bottom)
+            doc.setFontSize(10);
+            doc.setTextColor(lightGray);
+            doc.text("Verified Training Module", centerX, 195, { align: "center" });
+
+            // --- SAVE FILE ---
+            doc.save("Project44_Training_Certificate.pdf");
         }
     </script>
 </body>
